@@ -6,6 +6,9 @@ import { AppService } from './app.service';
 import { TenantsModule } from './tenants/tenants.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { ArticlesModule } from './articles/articles.module';
+import { CommentsModule } from './comments/comments.module';
+import { TagsModule } from './tags/tags.module';
 import { TenantMiddleware } from './tenants/tenant.middleware';
 
 @Module({
@@ -54,6 +57,9 @@ import { TenantMiddleware } from './tenants/tenant.middleware';
     TenantsModule,
     UsersModule,
     AuthModule,
+    ArticlesModule,
+    CommentsModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
