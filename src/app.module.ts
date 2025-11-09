@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { ArticlesModule } from './articles/articles.module';
 import { CommentsModule } from './comments/comments.module';
 import { TagsModule } from './tags/tags.module';
+import { RbacModule } from './rbac/rbac.module';
+import { AuditModule } from './audit/audit.module';
 import { TenantMiddleware } from './tenants/tenant.middleware';
 
 @Module({
@@ -54,6 +56,8 @@ import { TenantMiddleware } from './tenants/tenant.middleware';
     }),
 
     // Application modules
+    RbacModule,
+    AuditModule,
     TenantsModule,
     UsersModule,
     AuthModule,
