@@ -1,8 +1,12 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { TenantsModule } from './tenants/tenants.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
+import { TenantMiddleware } from './tenants/tenant.middleware';
 
 @Module({
   imports: [
@@ -45,8 +49,18 @@ import { AppService } from './app.service';
         };
       },
     }),
+
+    // Application modules
+    TenantsModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply tenant middleware to all routes
+    consumer.apply(TenantMiddleware).forRoutes('*');
+  }
+}
