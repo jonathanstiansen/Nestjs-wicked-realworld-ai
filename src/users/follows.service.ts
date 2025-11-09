@@ -20,9 +20,40 @@ export class FollowsService {
   ) {}
 
   /**
-   * Follow a user (idempotent)
+   * Follow a user by user IDs (idempotent)
    */
-  async follow(username: string, followerId: string): Promise<void> {
+  async follow(followerId: string, followingId: string): Promise<void> {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Cannot follow yourself
+    if (followingId === followerId) {
+      throw new BadRequestException('Cannot follow yourself');
+    }
+
+    // Check if already following
+    const existingFollow = await this.followRepository.findOne({
+      where: { followerId, followingId, tenantId },
+    });
+
+    if (existingFollow) {
+      // Already following - idempotent operation
+      return;
+    }
+
+    // Create follow relationship
+    const follow = this.followRepository.create({
+      followerId,
+      followingId,
+      tenantId,
+    });
+
+    await this.followRepository.save(follow);
+  }
+
+  /**
+   * Follow a user by username (idempotent)
+   */
+  async followByUsername(username: string, followerId: string): Promise<void> {
     const tenantId = this.tenantContext.getTenantId();
 
     // Verify user to follow exists in current tenant
@@ -34,35 +65,33 @@ export class FollowsService {
       throw new NotFoundException('User not found');
     }
 
-    // Cannot follow yourself
-    if (userToFollow.id === followerId) {
-      throw new BadRequestException('Cannot follow yourself');
-    }
-
-    // Check if already following
-    const existingFollow = await this.followRepository.findOne({
-      where: { followerId, followingId: userToFollow.id, tenantId },
-    });
-
-    if (existingFollow) {
-      // Already following - idempotent operation
-      return;
-    }
-
-    // Create follow relationship
-    const follow = this.followRepository.create({
-      followerId,
-      followingId: userToFollow.id,
-      tenantId,
-    });
-
-    await this.followRepository.save(follow);
+    await this.follow(followerId, userToFollow.id);
   }
 
   /**
-   * Unfollow a user (idempotent)
+   * Unfollow a user by user IDs (idempotent)
    */
-  async unfollow(username: string, followerId: string): Promise<void> {
+  async unfollow(followerId: string, followingId: string): Promise<void> {
+    const tenantId = this.tenantContext.getTenantId();
+
+    // Check if following
+    const follow = await this.followRepository.findOne({
+      where: { followerId, followingId, tenantId },
+    });
+
+    if (!follow) {
+      // Not following - idempotent operation
+      return;
+    }
+
+    // Remove follow relationship
+    await this.followRepository.delete({ id: follow.id, tenantId });
+  }
+
+  /**
+   * Unfollow a user by username (idempotent)
+   */
+  async unfollowByUsername(username: string, followerId: string): Promise<void> {
     const tenantId = this.tenantContext.getTenantId();
 
     // Verify user exists in current tenant
@@ -74,17 +103,19 @@ export class FollowsService {
       throw new NotFoundException('User not found');
     }
 
-    // Check if following
+    await this.unfollow(followerId, userToUnfollow.id);
+  }
+
+  /**
+   * Check if a user is following another user
+   */
+  async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    const tenantId = this.tenantContext.getTenantId();
+
     const follow = await this.followRepository.findOne({
-      where: { followerId, followingId: userToUnfollow.id, tenantId },
+      where: { followerId, followingId, tenantId },
     });
 
-    if (!follow) {
-      // Not following - idempotent operation
-      return;
-    }
-
-    // Remove follow relationship
-    await this.followRepository.delete({ id: follow.id, tenantId });
+    return !!follow;
   }
 }

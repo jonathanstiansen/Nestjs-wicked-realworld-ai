@@ -86,7 +86,7 @@ describe('FollowsService', () => {
       jest.spyOn(followRepository, 'save').mockResolvedValue(mockFollow);
 
       // Act
-      await service.follow('user2', mockFollowerId);
+      await service.followByUsername('user2', mockFollowerId);
 
       // Assert
       expect(tenantContext.getTenantId).toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('FollowsService', () => {
       jest.spyOn(followRepository, 'findOne').mockResolvedValue(mockFollow);
 
       // Act
-      await service.follow('user2', mockFollowerId);
+      await service.followByUsername('user2', mockFollowerId);
 
       // Assert
       expect(followRepository.save).not.toHaveBeenCalled();
@@ -114,7 +114,7 @@ describe('FollowsService', () => {
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(selfUser);
 
       // Act & Assert
-      await expect(service.follow('user1', mockFollowerId)).rejects.toThrow(
+      await expect(service.followByUsername('user1', mockFollowerId)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -124,7 +124,7 @@ describe('FollowsService', () => {
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.follow('user2', mockFollowerId)).rejects.toThrow(
+      await expect(service.followByUsername('user2', mockFollowerId)).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -138,7 +138,7 @@ describe('FollowsService', () => {
       jest.spyOn(followRepository, 'delete').mockResolvedValue({ affected: 1, raw: {} });
 
       // Act
-      await service.unfollow('user2', mockFollowerId);
+      await service.unfollowByUsername('user2', mockFollowerId);
 
       // Assert
       expect(followRepository.delete).toHaveBeenCalledWith({
@@ -153,7 +153,7 @@ describe('FollowsService', () => {
       jest.spyOn(followRepository, 'findOne').mockResolvedValue(null);
 
       // Act
-      await service.unfollow('user2', mockFollowerId);
+      await service.unfollowByUsername('user2', mockFollowerId);
 
       // Assert
       expect(followRepository.delete).not.toHaveBeenCalled();
@@ -164,7 +164,7 @@ describe('FollowsService', () => {
       jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.unfollow('user2', mockFollowerId)).rejects.toThrow(
+      await expect(service.unfollowByUsername('user2', mockFollowerId)).rejects.toThrow(
         NotFoundException,
       );
     });
